@@ -1,6 +1,6 @@
 import faker from '@faker-js/faker';
 import { Enrollment, Address, Ticket, TicketType, Booking, Room } from '@prisma/client';
-import { mockEnrollment, mockTicket, mockTicketType, mockRoom, mockBookings } from '../factories';
+import { mockEnrollment, mockTicket, mockTicketType, mockRoom, mockBookings, mockUser } from '../factories';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
 import roomRepository from '@/repositories/room-repository';
@@ -8,6 +8,7 @@ import bookingRepository from '@/repositories/booking-repository';
 import bookingService from '@/services/booking-service';
 import { cannotBookingError } from '@/errors/cannot-booking-error';
 import { notFoundError } from '@/errors';
+import { badRequestError } from '@/errors/bad-request-error';
 
 describe('check Enrollment tests', () => {
   const bookingError = cannotBookingError();
@@ -177,5 +178,54 @@ describe('get booking tests', () => {
 
       expect(promise).resolves.toEqual(bookings[0]);
     });
+  });
+});
+
+describe('booking room by id tests', () => {
+  it('Should throw badRequest if roomId is invalid', () => {
+    const promise = bookingService.bookingRoomById(0, 0);
+
+    expect(promise).rejects.toEqual(badRequestError);
+  });
+
+  it('Should return booking is valid request', () => {
+    const room = mockRoom({ capacity: 3 });
+    const user = mockUser();
+
+    mockBookings(user.id + 1, room, 2);
+
+    jest
+      .spyOn(enrollmentRepository, 'findWithAddressByUserId')
+      .mockImplementation(async (): Promise<Enrollment & { Address: Address[] }> => {
+        return mockEnrollment();
+      });
+
+    jest
+      .spyOn(ticketsRepository, 'findTicketByEnrollmentId')
+      .mockImplementationOnce(async (): Promise<Ticket & { TicketType: TicketType }> => {
+        const ticketType = mockTicketType({ includesHotel: true, isRemote: false });
+
+        return mockTicket(ticketType, 1, 'PAID');
+      });
+
+    jest.spyOn(roomRepository, 'findById').mockImplementationOnce(async () => room);
+
+    jest.spyOn(bookingRepository, 'findByRoomId').mockImplementationOnce(async () => {
+      return [];
+    });
+
+    jest.spyOn(bookingRepository, 'create').mockImplementationOnce(async ({ roomId, userId }): Promise<Booking> => {
+      return {
+        id: faker.datatype.number({ precision: 1, min: 1 }),
+        userId,
+        roomId,
+        createdAt: faker.datatype.datetime(),
+        updatedAt: faker.datatype.datetime(),
+      };
+    });
+
+    const promise = bookingService.bookingRoomById(user.id, room.id);
+
+    expect(promise).resolves.toMatchObject({ roomId: room.id, userId: user.id });
   });
 });

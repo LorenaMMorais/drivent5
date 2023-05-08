@@ -14,3 +14,16 @@ export async function createUser(params: Partial<User> = {}): Promise<User> {
     },
   });
 }
+
+export function mockUser(params: Partial<User> = {}): User {
+  const incomingPassword = params.password || faker.internet.password(6);
+  const hashedPassword = bcrypt.hashSync(incomingPassword, 10);
+
+  return {
+    id: faker.datatype.number({ precision: 1, min: 1 }),
+    email: params.email || faker.internet.email(),
+    password: hashedPassword,
+    createdAt: faker.datatype.datetime(),
+    updatedAt: faker.datatype.datetime(),
+  };
+}
