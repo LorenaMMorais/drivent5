@@ -16,7 +16,7 @@ async function listHotels(userId: number) {
   }
 }
 
-async function getHotels(userId: number) {
+export async function getHotels(userId: number) {
   await listHotels(userId);
 
   const hotels = await hotelRepository.findHotels();
@@ -26,7 +26,7 @@ async function getHotels(userId: number) {
   return hotels;
 }
 
-async function getHotelsWithRooms(userId: number, hotelId: number) {
+export async function getHotelsWithRooms(userId: number, hotelId: number) {
   await listHotels(userId);
 
   const hotel = await hotelRepository.findRoomsByHotelId(hotelId);

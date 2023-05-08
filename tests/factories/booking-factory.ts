@@ -1,5 +1,6 @@
 /* eslint-disable quotes */
 import { Booking, Room } from '@prisma/client';
+import faker from '@faker-js/faker';
 import { prisma } from '@/config';
 
 type CreateBookingParams = {
@@ -33,4 +34,15 @@ export function getBookingReturn() {
     },
   };
   return booking;
+}
+
+export function mockBookings(userId: number, room: Room, numBookings: number): (Booking & { Room: Room })[] {
+  return Array(numBookings).fill({
+    id: faker.datatype.number({ precision: 1 }),
+    roomId: room.id,
+    userId: userId,
+    createdAt: faker.datatype.datetime(),
+    updatedAt: faker.datatype.datetime(),
+    Room: room,
+  });
 }

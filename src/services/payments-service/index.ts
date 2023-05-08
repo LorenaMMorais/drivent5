@@ -14,7 +14,7 @@ async function verifyTicketAndEnrollment(ticketId: number, userId: number) {
   if (enrollment.userId !== userId) throw unauthorizedError();
 }
 
-async function getPaymentByTicketId(userId: number, ticketId: number) {
+export async function getPaymentByTicketId(userId: number, ticketId: number) {
   await verifyTicketAndEnrollment(ticketId, userId);
 
   const payment = await paymentsRepository.findPaymentByTicketId(ticketId);
@@ -23,7 +23,7 @@ async function getPaymentByTicketId(userId: number, ticketId: number) {
   return payment;
 }
 
-async function paymentProcess(ticketId: number, userId: number, cardData: CardPaymentParams) {
+export async function paymentProcess(ticketId: number, userId: number, cardData: CardPaymentParams) {
   await verifyTicketAndEnrollment(ticketId, userId);
 
   const ticket = await ticketsRepository.findTickeWithTypeById(ticketId);

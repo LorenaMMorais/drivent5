@@ -6,7 +6,7 @@ import enrollmentRepository from '@/repositories/enrollment-repository';
 import roomRepository from '@/repositories/room-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
 
-async function checkEnrollmentTicket(userId: number) {
+export async function checkEnrollmentTicket(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) throw cannotBookingError();
 
@@ -17,7 +17,7 @@ async function checkEnrollmentTicket(userId: number) {
   }
 }
 
-async function checkValidBooking(roomId: number) {
+export async function checkValidBooking(roomId: number) {
   const room = await roomRepository.findById(roomId);
   const bookings = await bookingRepository.findByRoomId(roomId);
 
@@ -25,14 +25,14 @@ async function checkValidBooking(roomId: number) {
   if (room.capacity <= bookings.length) throw cannotBookingError();
 }
 
-async function getBooking(userId: number) {
+export async function getBooking(userId: number) {
   const booking = await bookingRepository.findByUserId(userId);
   if (!booking) throw notFoundError();
 
   return booking;
 }
 
-async function bookingRoomById(userId: number, roomId: number) {
+export async function bookingRoomById(userId: number, roomId: number) {
   if (!roomId) throw badRequestError();
 
   await checkEnrollmentTicket(userId);
@@ -41,7 +41,7 @@ async function bookingRoomById(userId: number, roomId: number) {
   return bookingRepository.create({ roomId, userId });
 }
 
-async function changeBookingRoomById(userId: number, roomId: number) {
+export async function changeBookingRoomById(userId: number, roomId: number) {
   if (!roomId) throw badRequestError();
 
   await checkValidBooking(roomId);
